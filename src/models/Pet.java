@@ -1,6 +1,6 @@
 package models;
-
-public abstract class Pet {
+import interfaces.Adoptable;
+public abstract class Pet implements Adoptable {
 
     private int petId;
     private String name;
@@ -8,6 +8,7 @@ public abstract class Pet {
     private String breed;
     private String gender;
     private boolean available;
+    private boolean adopted;
 
     // Constructor
     public Pet(int petId, String name, int age, String breed,
@@ -18,6 +19,7 @@ public abstract class Pet {
         this.breed = breed;
         this.gender = gender;
         this.available = available;
+        this.adopted = false;
     }
 
     // Getters
@@ -78,4 +80,14 @@ public abstract class Pet {
         System.out.println("Gender: " + gender);
         System.out.println("Available: " + available);
     }
+    @Override
+public void adopt() {
+    adopted = true;
+    available = false;
+}
+
+@Override
+public boolean isAdopted() {
+    return adopted;
+}
 }
