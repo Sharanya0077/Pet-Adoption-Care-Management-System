@@ -1,0 +1,14 @@
+# Java compiled files
+*.class
+bin/
+out/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
