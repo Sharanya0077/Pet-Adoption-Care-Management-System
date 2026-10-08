@@ -40,6 +40,13 @@ public class AdoptionApplication {
     public void setStatus(String status) {
         this.status = status;
     }
+    public void approve() {
+    status = "Approved";
+}
+
+public void reject() {
+    status = "Rejected";
+}
 
     public void displayApplication() {
         System.out.println("Application ID: " + applicationId);
