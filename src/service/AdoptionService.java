@@ -1,5 +1,5 @@
 package service;
-
+import exceptions.PetNotFoundException;
 import models.Adopter;
 import models.Pet;
 
@@ -11,7 +11,7 @@ public class AdoptionService {
         this.petService = petService;
     }
 
-    public void adoptPet(int petId, Adopter adopter) {
+   public void adoptPet(int petId, Adopter adopter) throws PetNotFoundException{
 
         for (Pet pet : petService.getPets()) {
 
@@ -32,6 +32,8 @@ public class AdoptionService {
             }
         }
 
-        System.out.println("Pet with ID " + petId + " was not found.");
+       throw new PetNotFoundException(
+    "Pet with ID " + petId + " was not found."
+);
     }
 }
