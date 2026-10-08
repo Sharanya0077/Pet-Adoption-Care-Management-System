@@ -77,4 +77,23 @@ public class AdoptionService {
 
     return application;
 }
+public void approveApplication(AdoptionApplication application) {
+
+    if (!application.getStatus().equals("Pending")) {
+        System.out.println("This application has already been processed.");
+        return;
+    }
+
+    application.approve();
+
+    Pet pet = application.getPet();
+    pet.adopt();
+
+    System.out.println(
+        "Application " + application.getApplicationId()
+        + " approved. " + pet.getName()
+        + " has been adopted by "
+        + application.getAdopter().getName() + "!"
+    );
+}
 }
