@@ -1,5 +1,6 @@
 import exceptions.PetNotFoundException;
 import models.Adopter;
+import models.AdoptionApplication;
 import models.Dog;
 import models.Pet;
 import service.AdoptionService;
@@ -34,6 +35,17 @@ public class Main {
                 new AdoptionService(petService);
 
         try {
+            AdoptionApplication application =
+        adoptionService.createApplication(
+            1001,
+            adopter,
+            dog,
+            "09-10-2026"
+        );
+
+if (application != null) {
+    application.displayApplication();
+}
             adoptionService.adoptPet(101, adopter);
             System.out.println("Pet available: " + dog.isAvailable());
             System.out.println("Pet adopted: " + dog.isAdopted());
