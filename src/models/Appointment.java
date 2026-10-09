@@ -1,3 +1,4 @@
+
 package models;
 
 public class Appointment {
@@ -12,39 +13,51 @@ public class Appointment {
     public Appointment(int appointmentId, Pet pet, Vet vet,
                        String appointmentDate, String reason) {
 
+        if (appointmentId <= 0) {
+            throw new IllegalArgumentException(
+                "Appointment ID must be positive."
+            );
+        }
+        if (pet == null || vet == null) {
+            throw new IllegalArgumentException(
+                "Pet and vet are required."
+            );
+        }
+
         this.appointmentId = appointmentId;
         this.pet = pet;
         this.vet = vet;
-        this.appointmentDate = appointmentDate;
-        this.reason = reason;
+        this.appointmentDate = requireText(
+            appointmentDate, "Appointment date"
+        );
+        this.reason = requireText(reason, "Reason");
         this.status = "Scheduled";
     }
 
-    public int getAppointmentId() {
-        return appointmentId;
+    private String requireText(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                field + " cannot be empty."
+            );
+        }
+        return value.trim();
     }
 
-    public Pet getPet() {
-        return pet;
-    }
-
-    public Vet getVet() {
-        return vet;
-    }
-
-    public String getAppointmentDate() {
-        return appointmentDate;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public String getStatus() {
-        return status;
-    }
+    public int getAppointmentId() { return appointmentId; }
+    public Pet getPet() { return pet; }
+    public Vet getVet() { return vet; }
+    public String getAppointmentDate() { return appointmentDate; }
+    public String getReason() { return reason; }
+    public String getStatus() { return status; }
 
     public void setStatus(String status) {
+        if (!"Scheduled".equals(status)
+                && !"Completed".equals(status)
+                && !"Cancelled".equals(status)) {
+            throw new IllegalArgumentException(
+                "Invalid appointment status."
+            );
+        }
         this.status = status;
     }
 

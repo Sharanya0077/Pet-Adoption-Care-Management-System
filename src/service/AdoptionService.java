@@ -7,10 +7,13 @@ import exceptions.InvalidAdoptionException;
 import models.Adopter;
 import models.Pet;
 import models.AdoptionApplication;
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 public class AdoptionService {
 
     private PetService petService;
+    private Set<Integer> applicationIds = new HashSet<>();
 
     public AdoptionService(PetService petService) {
         this.petService = petService;
@@ -46,6 +49,11 @@ public class AdoptionService {
             Adopter adopter,
             Pet pet,
             String applicationDate) throws PetNotFoundException {
+                if (applicationIds.contains(applicationId)) {
+    throw new InvalidAdoptionException(
+        "Duplicate application ID: " + applicationId
+    );
+}
 
         if (adopter == null || pet == null
                 || applicationDate == null
@@ -75,19 +83,22 @@ public class AdoptionService {
             );
         }
 
-        AdoptionApplication application =
-            new AdoptionApplication(
-                applicationId,
-                adopter,
-                registeredPet,
-                applicationDate.trim()
-            );
+AdoptionApplication application =
+    new AdoptionApplication(
+        applicationId,
+        adopter,
+        registeredPet,
+        applicationDate.trim()
+    );
 
-        System.out.println(
-            "Adoption application created successfully!"
-        );
+applicationIds.add(applicationId);
 
-        return application;
+System.out.println(
+    "Adoption application created successfully!"
+);
+
+return application;
+
     }
 
     public void approveApplication(AdoptionApplication application) {
@@ -132,4 +143,21 @@ public class AdoptionService {
             "Pet with ID " + petId + " was not found."
         );
     }
+    public void registerApplications(List<AdoptionApplication> applications) {
+        if (applications == null) {
+        throw new IllegalArgumentException(
+            "Application list cannot be null."
+        );
+    }
+    applicationIds.clear();
+
+    for (AdoptionApplication application : applications) {
+        if (application == null
+                || !applicationIds.add(application.getApplicationId())) {
+            throw new IllegalArgumentException(
+                "Null application or duplicate application ID."
+            );
+        }
+    }
+}
 }

@@ -66,6 +66,7 @@ public class Main {
             applications = fileManager.loadApplications(
                 "data/applications.txt", petService.getPets()
             );
+            adoptionService.registerApplications(applications);
 
             medicalService.setMedicalRecords(
                 fileManager.loadMedicalRecords(

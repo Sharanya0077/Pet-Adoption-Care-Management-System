@@ -8,49 +8,138 @@ import models.Vaccination;
 import models.Vet;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MedicalService {
 
-    private List<MedicalRecord> medicalRecords;
-    private List<Vaccination> vaccinations;
-    private List<Appointment> appointments;
-
-    public MedicalService() {
-        medicalRecords = new ArrayList<>();
-        vaccinations = new ArrayList<>();
-        appointments = new ArrayList<>();
-    }
+    private List<MedicalRecord> medicalRecords = new ArrayList<>();
+    private List<Vaccination> vaccinations = new ArrayList<>();
+    private List<Appointment> appointments = new ArrayList<>();
 
     public void addMedicalRecord(MedicalRecord record) {
+        if (record == null) {
+            throw new IllegalArgumentException(
+                "Medical record cannot be null."
+            );
+        }
+
+        for (MedicalRecord existing : medicalRecords) {
+            if (existing.getRecordId() == record.getRecordId()) {
+                throw new IllegalArgumentException(
+                    "Duplicate medical record ID: " + record.getRecordId()
+                );
+            }
+        }
         medicalRecords.add(record);
     }
 
     public void addVaccination(Vaccination vaccination) {
+        if (vaccination == null) {
+            throw new IllegalArgumentException(
+                "Vaccination cannot be null."
+            );
+        }
+
+        for (Vaccination existing : vaccinations) {
+            if (existing.getVaccinationId()
+                    == vaccination.getVaccinationId()) {
+                throw new IllegalArgumentException(
+                    "Duplicate vaccination ID: "
+                    + vaccination.getVaccinationId()
+                );
+            }
+        }
         vaccinations.add(vaccination);
     }
 
     public void scheduleAppointment(Appointment appointment) {
+        if (appointment == null) {
+            throw new IllegalArgumentException(
+                "Appointment cannot be null."
+            );
+        }
+
+        for (Appointment existing : appointments) {
+            if (existing.getAppointmentId()
+                    == appointment.getAppointmentId()) {
+                throw new IllegalArgumentException(
+                    "Duplicate appointment ID: "
+                    + appointment.getAppointmentId()
+                );
+            }
+        }
         appointments.add(appointment);
     }
 
-    // Restore records loaded from files
     public void setMedicalRecords(List<MedicalRecord> records) {
-        medicalRecords.clear();
-        medicalRecords.addAll(records);
+        List<MedicalRecord> checked = new ArrayList<>();
+        Set<Integer> ids = new HashSet<>();
+
+        if (records == null) {
+            throw new IllegalArgumentException("Records cannot be null.");
+        }
+
+        for (MedicalRecord record : records) {
+            if (record == null || !ids.add(record.getRecordId())) {
+                throw new IllegalArgumentException(
+                    "Null or duplicate medical record."
+                );
+            }
+            checked.add(record);
+        }
+
+        medicalRecords = checked;
     }
 
     public void setVaccinations(List<Vaccination> savedVaccinations) {
-        vaccinations.clear();
-        vaccinations.addAll(savedVaccinations);
+        List<Vaccination> checked = new ArrayList<>();
+        Set<Integer> ids = new HashSet<>();
+
+        if (savedVaccinations == null) {
+            throw new IllegalArgumentException(
+                "Vaccination list cannot be null."
+            );
+        }
+
+        for (Vaccination vaccination : savedVaccinations) {
+            if (vaccination == null
+                    || !ids.add(vaccination.getVaccinationId())) {
+                throw new IllegalArgumentException(
+                    "Null or duplicate vaccination."
+                );
+            }
+            checked.add(vaccination);
+        }
+
+        vaccinations = checked;
     }
 
     public void setAppointments(List<Appointment> savedAppointments) {
-        appointments.clear();
-        appointments.addAll(savedAppointments);
+        List<Appointment> checked = new ArrayList<>();
+        Set<Integer> ids = new HashSet<>();
+
+        if (savedAppointments == null) {
+            throw new IllegalArgumentException(
+                "Appointment list cannot be null."
+            );
+        }
+
+        for (Appointment appointment : savedAppointments) {
+            if (appointment == null
+                    || !ids.add(appointment.getAppointmentId())) {
+                throw new IllegalArgumentException(
+                    "Null or duplicate appointment."
+                );
+            }
+            checked.add(appointment);
+        }
+
+        appointments = checked;
     }
 
-    // Display medical records for a particular pet
     public void displayMedicalRecords(Pet pet) {
         boolean found = false;
 
@@ -67,7 +156,6 @@ public class MedicalService {
         }
     }
 
-    // Display vaccinations for a particular pet
     public void displayVaccinations(Pet pet) {
         boolean found = false;
 
@@ -84,7 +172,6 @@ public class MedicalService {
         }
     }
 
-    // Display appointments assigned to a particular vet
     public void displayAppointments(Vet vet) {
         boolean found = false;
 
@@ -102,14 +189,14 @@ public class MedicalService {
     }
 
     public List<MedicalRecord> getMedicalRecords() {
-        return medicalRecords;
+        return Collections.unmodifiableList(medicalRecords);
     }
 
     public List<Vaccination> getVaccinations() {
-        return vaccinations;
+        return Collections.unmodifiableList(vaccinations);
     }
 
     public List<Appointment> getAppointments() {
-        return appointments;
+        return Collections.unmodifiableList(appointments);
     }
 }

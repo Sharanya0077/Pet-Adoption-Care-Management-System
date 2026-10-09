@@ -1,3 +1,4 @@
+
 package models;
 
 public class Vaccination {
@@ -11,32 +12,38 @@ public class Vaccination {
     public Vaccination(int vaccinationId, Pet pet, String vaccineName,
                        String vaccinationDate, String nextDueDate) {
 
+        if (vaccinationId <= 0) {
+            throw new IllegalArgumentException(
+                "Vaccination ID must be positive."
+            );
+        }
+        if (pet == null) {
+            throw new IllegalArgumentException("Pet is required.");
+        }
+
         this.vaccinationId = vaccinationId;
         this.pet = pet;
-        this.vaccineName = vaccineName;
-        this.vaccinationDate = vaccinationDate;
-        this.nextDueDate = nextDueDate;
+        this.vaccineName = requireText(vaccineName, "Vaccine name");
+        this.vaccinationDate = requireText(
+            vaccinationDate, "Vaccination date"
+        );
+        this.nextDueDate = requireText(nextDueDate, "Next due date");
     }
 
-    public int getVaccinationId() {
-        return vaccinationId;
+    private String requireText(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                field + " cannot be empty."
+            );
+        }
+        return value.trim();
     }
 
-    public Pet getPet() {
-        return pet;
-    }
-
-    public String getVaccineName() {
-        return vaccineName;
-    }
-
-    public String getVaccinationDate() {
-        return vaccinationDate;
-    }
-
-    public String getNextDueDate() {
-        return nextDueDate;
-    }
+    public int getVaccinationId() { return vaccinationId; }
+    public Pet getPet() { return pet; }
+    public String getVaccineName() { return vaccineName; }
+    public String getVaccinationDate() { return vaccinationDate; }
+    public String getNextDueDate() { return nextDueDate; }
 
     public void displayVaccination() {
         System.out.println("Vaccination ID: " + vaccinationId);
@@ -46,3 +53,4 @@ public class Vaccination {
         System.out.println("Next Due: " + nextDueDate);
     }
 }
+

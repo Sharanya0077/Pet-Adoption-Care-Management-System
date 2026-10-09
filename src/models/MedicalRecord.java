@@ -1,3 +1,4 @@
+
 package models;
 
 public class MedicalRecord {
@@ -11,39 +12,43 @@ public class MedicalRecord {
     public MedicalRecord(int recordId, Pet pet, String diagnosis,
                          String treatment, String recordDate) {
 
+        if (recordId <= 0) {
+            throw new IllegalArgumentException(
+                "Medical record ID must be positive."
+            );
+        }
+        if (pet == null) {
+            throw new IllegalArgumentException("Pet is required.");
+        }
+
         this.recordId = recordId;
         this.pet = pet;
-        this.diagnosis = diagnosis;
-        this.treatment = treatment;
-        this.recordDate = recordDate;
+        this.diagnosis = requireText(diagnosis, "Diagnosis");
+        this.treatment = requireText(treatment, "Treatment");
+        this.recordDate = requireText(recordDate, "Record date");
     }
 
-    public int getRecordId() {
-        return recordId;
+    private String requireText(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                field + " cannot be empty."
+            );
+        }
+        return value.trim();
     }
 
-    public Pet getPet() {
-        return pet;
-    }
-
-    public String getDiagnosis() {
-        return diagnosis;
-    }
-
-    public String getTreatment() {
-        return treatment;
-    }
-
-    public String getRecordDate() {
-        return recordDate;
-    }
+    public int getRecordId() { return recordId; }
+    public Pet getPet() { return pet; }
+    public String getDiagnosis() { return diagnosis; }
+    public String getTreatment() { return treatment; }
+    public String getRecordDate() { return recordDate; }
 
     public void setDiagnosis(String diagnosis) {
-        this.diagnosis = diagnosis;
+        this.diagnosis = requireText(diagnosis, "Diagnosis");
     }
 
     public void setTreatment(String treatment) {
-        this.treatment = treatment;
+        this.treatment = requireText(treatment, "Treatment");
     }
 
     public void displayRecord() {
