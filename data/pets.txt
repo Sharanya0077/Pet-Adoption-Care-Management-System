@@ -1,1 +1,6 @@
-Dog|101|QnVkZHk=|2|R29sZGVuIFJldHJpZXZlcg==|TWFsZQ==|false|true|QmFzaWM=
+Dog|101|QnVkZHk=|3|TGFicmFkb3I=|TWFsZQ==|false|true|QWR2YW5jZWQ=
+Dog|102|Q29jbw==|2|QmVhZ2xl|RmVtYWxl|true|false|QmVnaW5uZXI=
+Cat|103|THVuYQ==|1|UGVyc2lhbg==|RmVtYWxl|true|false|dHJ1ZQ==
+Cat|104|TWlsbw==|4|SW5kaWU=|TWFsZQ==|true|false|ZmFsc2U=
+Bird|105|S2l3aQ==|1|QnVkZ2VyaWdhcg==|TWFsZQ==|true|false|dHJ1ZQ==
+Bird|106|UGVwcGVy|2|Q29ja2F0aWVs|RmVtYWxl|true|false|dHJ1ZQ==
