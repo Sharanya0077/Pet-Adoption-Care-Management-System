@@ -10,11 +10,13 @@ import models.AdoptionApplication;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 public class AdoptionService {
 
     private PetService petService;
     private Set<Integer> applicationIds = new HashSet<>();
-
+private List<AdoptionApplication> registeredApplications =
+        new ArrayList<>();
     public AdoptionService(PetService petService) {
         this.petService = petService;
     }
@@ -69,19 +71,33 @@ public class AdoptionService {
             );
         }
 
-        Pet registeredPet = findPet(pet.getPetId());
+        
+Pet registeredPet = findPet(pet.getPetId());
 
-        if (registeredPet.isAdopted()) {
-            throw new PetAlreadyAdoptedException(
-                registeredPet.getName() + " has already been adopted."
-            );
-        }
+// Check pet status first
+if (registeredPet.isAdopted()) {
+    throw new PetAlreadyAdoptedException(
+        registeredPet.getName() + " has already been adopted."
+    );
+}
 
-        if (!registeredPet.isAvailable()) {
-            throw new InvalidAdoptionException(
-                registeredPet.getName() + " is unavailable for adoption."
-            );
-        }
+if (!registeredPet.isAvailable()) {
+    throw new InvalidAdoptionException(
+        registeredPet.getName() + " is unavailable for adoption."
+    );
+}
+
+// Then check for another pending application
+for (AdoptionApplication existing : registeredApplications) {
+    if (existing.getPet().getPetId() == registeredPet.getPetId()
+            && "Pending".equals(existing.getStatus())) {
+        throw new InvalidAdoptionException(
+            "A pending application already exists for "
+            + registeredPet.getName() + "."
+        );
+    }
+}
+
 
 AdoptionApplication application =
     new AdoptionApplication(
@@ -92,7 +108,7 @@ AdoptionApplication application =
     );
 
 applicationIds.add(applicationId);
-
+registeredApplications.add(application);
 System.out.println(
     "Adoption application created successfully!"
 );
@@ -143,21 +159,37 @@ return application;
             "Pet with ID " + petId + " was not found."
         );
     }
-    public void registerApplications(List<AdoptionApplication> applications) {
-        if (applications == null) {
+    
+public void registerApplications(
+        List<AdoptionApplication> applications) {
+
+    if (applications == null) {
         throw new IllegalArgumentException(
             "Application list cannot be null."
         );
     }
-    applicationIds.clear();
+
+    Set<Integer> newIds = new HashSet<>();
 
     for (AdoptionApplication application : applications) {
-        if (application == null
-                || !applicationIds.add(application.getApplicationId())) {
+        if (application == null) {
             throw new IllegalArgumentException(
-                "Null application or duplicate application ID."
+                "Application cannot be null."
+            );
+        }
+
+        if (application.getApplicationId() <= 0
+                || !newIds.add(application.getApplicationId())) {
+            throw new IllegalArgumentException(
+                "Invalid or duplicate application ID."
             );
         }
     }
+
+    applicationIds.clear();
+    applicationIds.addAll(newIds);
+
+    registeredApplications = new ArrayList<>(applications);
 }
+
 }

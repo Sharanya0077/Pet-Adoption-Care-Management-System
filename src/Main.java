@@ -1,5 +1,4 @@
 
-import exceptions.PetNotFoundException;
 import models.*;
 import service.AdoptionService;
 import service.PetService;
@@ -15,17 +14,19 @@ public class Main {
 
         FileManager fileManager = new FileManager();
         PetService petService = new PetService();
+        MedicalService medicalService = new MedicalService();
 
-        // 1. Load saved pets, or create demo data if none exist
+        // 1. Load pets or create a demo pet
         try {
             List<Pet> savedPets =
-                fileManager.loadPets("data/pets.txt");
+                    fileManager.loadPets("data/pets.txt");
 
             if (savedPets.isEmpty()) {
                 petService.addPet(new Dog(
                     101, "Buddy", 2, "Golden Retriever",
                     "Male", true, "Basic"
                 ));
+
                 System.out.println("Demo pet created.");
             } else {
                 petService.setPets(savedPets);
@@ -33,11 +34,11 @@ public class Main {
             }
 
         } catch (IOException e) {
-            System.out.println("Could not load pets: " + e.getMessage());
+            System.out.println(
+                "Could not load pets: " + e.getMessage()
+            );
             return;
         }
-
-        Pet dog = petService.getPets().get(0);
 
         // 2. Create users and services
         Adopter adopter = new Adopter(
@@ -56,37 +57,43 @@ public class Main {
         );
 
         AdoptionService adoptionService =
-            new AdoptionService(petService);
-
-        MedicalService medicalService = new MedicalService();
+                new AdoptionService(petService);
 
         // 3. Load saved applications and care records
         List<AdoptionApplication> applications;
+
         try {
             applications = fileManager.loadApplications(
-                "data/applications.txt", petService.getPets()
+                "data/applications.txt",
+                petService.getPets()
             );
+
             adoptionService.registerApplications(applications);
 
             medicalService.setMedicalRecords(
                 fileManager.loadMedicalRecords(
-                    "data/medical_records.txt", petService.getPets()
+                    "data/medical_records.txt",
+                    petService.getPets()
                 )
             );
 
             medicalService.setVaccinations(
                 fileManager.loadVaccinations(
-                    "data/vaccinations.txt", petService.getPets()
+                    "data/vaccinations.txt",
+                    petService.getPets()
                 )
             );
 
             medicalService.setAppointments(
                 fileManager.loadAppointments(
-                    "data/appointments.txt", petService.getPets()
+                    "data/appointments.txt",
+                    petService.getPets()
                 )
             );
 
-            System.out.println("Saved applications and care records loaded.");
+            System.out.println(
+                "Saved applications and care records loaded."
+            );
 
         } catch (IOException e) {
             System.out.println(
@@ -95,137 +102,60 @@ public class Main {
             return;
         }
 
-        // 4. Run the adoption demo only when appropriate
-        System.out.println("\n========== ADOPTION ==========");
+        // 4. Add demo care data only when a category is empty
+        Pet demoPet = petService.getPets().get(0);
 
-        boolean existingApplication = false;
-
-        for (AdoptionApplication application : applications) {
-            if (application.getPet().getPetId() == dog.getPetId()
-                    && !application.getStatus().equals("Rejected")) {
-                existingApplication = true;
-                break;
-            }
-        }
-
-        if (!dog.isAvailable() || dog.isAdopted()) {
-            System.out.println(
-                dog.getName() + " is already adopted or unavailable."
-            );
-
-        } else if (existingApplication) {
-            System.out.println(
-                "An application already exists for " + dog.getName() + "."
-            );
-
-        } else {
-            int nextApplicationId = 1001;
-
-            for (AdoptionApplication application : applications) {
-                if (application.getApplicationId() >= nextApplicationId) {
-                    nextApplicationId =
-                        application.getApplicationId() + 1;
-                }
-            }
-
-            try {
-                AdoptionApplication application =
-                    adoptionService.createApplication(
-                        nextApplicationId,
-                        adopter,
-                        dog,
-                        "09-10-2026"
-                    );
-
-                if (application != null) {
-                    applications.add(application);
-                    application.displayApplication();
-
-                    System.out.println("\n--- Admin Review ---");
-                    admin.approveApplication(application);
-                    adoptionService.approveApplication(application);
-                }
-
-            } catch (PetNotFoundException e) {
-                System.out.println("Adoption error: " + e.getMessage());
-            }
-        }
-
-        System.out.println("\nPet available: " + dog.isAvailable());
-        System.out.println("Pet adopted: " + dog.isAdopted());
-
-        // 5. Add sample medical data only if it doesn't already exist
-        boolean hasMedicalRecord = false;
-
-        for (MedicalRecord record : medicalService.getMedicalRecords()) {
-            if (record.getPet().getPetId() == dog.getPetId()) {
-                hasMedicalRecord = true;
-                break;
-            }
-        }
-
-        if (!hasMedicalRecord) {
+        if (medicalService.getMedicalRecords().isEmpty()) {
             medicalService.addMedicalRecord(new MedicalRecord(
-                501, dog, "Minor skin infection",
-                "Topical medication for 7 days", "09-10-2026"
+                501, demoPet,
+                "Routine health check",
+                "General health assessment",
+                "09-10-2026"
             ));
         }
 
-        boolean hasVaccination = false;
-
-        for (Vaccination vaccination : medicalService.getVaccinations()) {
-            if (vaccination.getPet().getPetId() == dog.getPetId()) {
-                hasVaccination = true;
-                break;
-            }
-        }
-
-        if (!hasVaccination) {
+        if (medicalService.getVaccinations().isEmpty()) {
             medicalService.addVaccination(new Vaccination(
-                601, dog, "Rabies",
-                "09-10-2026", "09-10-2027"
+                601, demoPet,
+                "Rabies",
+                "09-10-2026",
+                "09-10-2027"
             ));
         }
 
-        boolean hasAppointment = false;
-
-        for (Appointment appointment : medicalService.getAppointments()) {
-            if (appointment.getPet().getPetId() == dog.getPetId()
-                    && appointment.getVet().getUserId() == vet.getUserId()) {
-                hasAppointment = true;
-                break;
-            }
-        }
-
-        if (!hasAppointment) {
+        if (medicalService.getAppointments().isEmpty()) {
             medicalService.scheduleAppointment(new Appointment(
-                701, dog, vet,
-                "10-10-2026", "Routine check-up"
+                701, demoPet, vet,
+                "10-10-2026",
+                "Routine check-up"
             ));
         }
 
-        // 6. Display medical and care information
-        System.out.println("\n========== MEDICAL & CARE ==========");
+        // 5. Start the interactive menu
+        Menu menu = new Menu(
+    petService,
+    adoptionService,
+    medicalService,
+    applications,
+    admin,
+    vet,
+    adopter
+);
 
-        System.out.println("\n--- Medical Records ---");
-        medicalService.displayMedicalRecords(dog);
+        menu.start();
 
-        System.out.println("\n--- Vaccinations ---");
-        medicalService.displayVaccinations(dog);
-
-        System.out.println("\n--- Vet Appointments ---");
-        medicalService.displayAppointments(vet);
-
-        // 7. Save all five types of data
+        // 6. Save all data after the user exits
         System.out.println("\n========== SAVING DATA ==========");
 
         try {
             fileManager.savePets(
-                "data/pets.txt", petService.getPets()
+                "data/pets.txt",
+                petService.getPets()
             );
 
             fileManager.saveApplications(
-                "data/applications.txt", applications
+                "data/applications.txt",
+                applications
             );
 
             fileManager.saveMedicalRecords(
@@ -246,7 +176,9 @@ public class Main {
             System.out.println("All records saved successfully!");
 
         } catch (IOException e) {
-            System.out.println("File storage error: " + e.getMessage());
+            System.out.println(
+                "File storage error: " + e.getMessage()
+            );
         }
     }
 }
