@@ -1,3 +1,4 @@
+
 package models;
 
 public class ShelterAdmin extends User {
@@ -13,27 +14,27 @@ public class ShelterAdmin extends User {
     }
 
     public void approveApplication(AdoptionApplication application) {
+        if (!application.getStatus().equals("Pending")) {
+            System.out.println("This application has already been processed.");
+            return;
+        }
 
-    if (!application.getStatus().equals("Approved")) {
+        application.approve();
+
         System.out.println(
-            "Application must be approved by an admin first."
+            "Application " + application.getApplicationId()
+            + " approved by the shelter admin."
         );
-        return;
     }
 
-    Pet pet = application.getPet();
-    pet.adopt();
-
-    System.out.println(
-        "Application " + application.getApplicationId()
-        + " approved. " + pet.getName()
-        + " has been adopted by "
-        + application.getAdopter().getName() + "!"
-    );
-}
-
     public void rejectApplication(AdoptionApplication application) {
+        if (!application.getStatus().equals("Pending")) {
+            System.out.println("This application has already been processed.");
+            return;
+        }
+
         application.reject();
+
         System.out.println(
             "Application " + application.getApplicationId()
             + " has been rejected."

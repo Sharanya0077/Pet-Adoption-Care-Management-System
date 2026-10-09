@@ -78,21 +78,22 @@ public class AdoptionService {
     return application;
 }
 public void approveApplication(AdoptionApplication application) {
-
-    if (!application.getStatus().equals("Pending")) {
-        System.out.println("This application has already been processed.");
+    if (!application.getStatus().equals("Approved")) {
+        System.out.println("The application has not been approved by an admin.");
         return;
     }
 
-    application.approve();
-
     Pet pet = application.getPet();
+
+    if (!pet.isAvailable() || pet.isAdopted()) {
+        System.out.println("This pet is no longer available for adoption.");
+        return;
+    }
+
     pet.adopt();
 
     System.out.println(
-        "Application " + application.getApplicationId()
-        + " approved. " + pet.getName()
-        + " has been adopted by "
+        pet.getName() + " has been adopted by "
         + application.getAdopter().getName() + "!"
     );
 }
