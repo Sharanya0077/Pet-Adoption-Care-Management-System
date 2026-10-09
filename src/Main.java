@@ -1,9 +1,13 @@
 
 import models.*;
+
 import service.AdoptionService;
+import service.AdopterService;
 import service.PetService;
 import service.MedicalService;
+
 import util.FileManager;
+import util.AdopterFileManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,21 +17,34 @@ public class Main {
     public static void main(String[] args) {
 
         FileManager fileManager = new FileManager();
+
+        AdopterFileManager adopterFileManager =
+                new AdopterFileManager();
+
+        AdopterService adopterService =
+                new AdopterService();
+
         PetService petService = new PetService();
         MedicalService medicalService = new MedicalService();
 
-        // 1. Load pets or create a demo pet
+        // 1. Load saved pets or create a demo pet
         try {
             List<Pet> savedPets =
                     fileManager.loadPets("data/pets.txt");
 
             if (savedPets.isEmpty()) {
                 petService.addPet(new Dog(
-                    101, "Buddy", 2, "Golden Retriever",
-                    "Male", true, "Basic"
+                    101,
+                    "Buddy",
+                    2,
+                    "Golden Retriever",
+                    "Male",
+                    true,
+                    "Basic"
                 ));
 
                 System.out.println("Demo pet created.");
+
             } else {
                 petService.setPets(savedPets);
                 System.out.println("Saved pets loaded.");
@@ -40,26 +57,45 @@ public class Main {
             return;
         }
 
-        // 2. Create users and services
-        Adopter adopter = new Adopter(
-            1, "Sharanya",
-            "sharanya@example.com", "9876543210"
-        );
+        // 2. Load saved adopter accounts
+        try {
+            adopterService.loadAdopters(
+                adopterFileManager.loadAdopters(
+                    "data/adopters.txt"
+                )
+            );
 
+            System.out.println("Adopter accounts loaded.");
+
+        } catch (IOException | IllegalArgumentException e) {
+            System.out.println(
+                "Could not load adopter accounts: "
+                + e.getMessage()
+            );
+            return;
+        }
+
+        // 3. Create staff accounts
         ShelterAdmin admin = new ShelterAdmin(
-            2, "Shelter Admin",
-            "admin@example.com", "9999999999"
+            2,
+            "Shelter Admin",
+            "admin@example.com",
+            "9999999999"
         );
 
         Vet vet = new Vet(
-            3, "Mehta", "vet@example.com",
-            "8888888888", "Veterinary Medicine"
+            3,
+            "Mehta",
+            "vet@example.com",
+            "8888888888",
+            "Veterinary Medicine"
         );
 
+        // 4. Create services
         AdoptionService adoptionService =
                 new AdoptionService(petService);
 
-        // 3. Load saved applications and care records
+        // 5. Load saved applications and care records
         List<AdoptionApplication> applications;
 
         try {
@@ -95,19 +131,27 @@ public class Main {
                 "Saved applications and care records loaded."
             );
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             System.out.println(
-                "Could not load saved records: " + e.getMessage()
+                "Could not load saved records: "
+                + e.getMessage()
             );
             return;
         }
 
-        // 4. Add demo care data only when a category is empty
+        // 6. Check that pets exist
+        if (petService.getPets().isEmpty()) {
+            System.out.println("No pets are registered.");
+            return;
+        }
+
+        // 7. Add demo care data if each category is empty
         Pet demoPet = petService.getPets().get(0);
 
         if (medicalService.getMedicalRecords().isEmpty()) {
             medicalService.addMedicalRecord(new MedicalRecord(
-                501, demoPet,
+                501,
+                demoPet,
                 "Routine health check",
                 "General health assessment",
                 "09-10-2026"
@@ -116,7 +160,8 @@ public class Main {
 
         if (medicalService.getVaccinations().isEmpty()) {
             medicalService.addVaccination(new Vaccination(
-                601, demoPet,
+                601,
+                demoPet,
                 "Rabies",
                 "09-10-2026",
                 "09-10-2027"
@@ -125,26 +170,28 @@ public class Main {
 
         if (medicalService.getAppointments().isEmpty()) {
             medicalService.scheduleAppointment(new Appointment(
-                701, demoPet, vet,
+                701,
+                demoPet,
+                vet,
                 "10-10-2026",
                 "Routine check-up"
             ));
         }
 
-        // 5. Start the interactive menu
+        // 8. Start the interactive menu
         Menu menu = new Menu(
-    petService,
-    adoptionService,
-    medicalService,
-    applications,
-    admin,
-    vet,
-    adopter
-);
+            petService,
+            adoptionService,
+            medicalService,
+            applications,
+            admin,
+            vet,
+            adopterService
+        );
 
         menu.start();
 
-        // 6. Save all data after the user exits
+        // 9. Save all records after the user exits
         System.out.println("\n========== SAVING DATA ==========");
 
         try {
@@ -171,6 +218,11 @@ public class Main {
             fileManager.saveAppointments(
                 "data/appointments.txt",
                 medicalService.getAppointments()
+            );
+
+            adopterFileManager.saveAdopters(
+                "data/adopters.txt",
+                adopterService.getAdopters()
             );
 
             System.out.println("All records saved successfully!");
