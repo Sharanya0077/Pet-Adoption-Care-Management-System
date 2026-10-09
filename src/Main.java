@@ -11,13 +11,28 @@ import models.MedicalRecord;
 import models.Vaccination;
 import models.Vet;
 import service.MedicalService;
+import util.FileManager;
+import java.io.IOException;
+import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
 
-        PetService petService = new PetService();
+PetService petService = new PetService();
+FileManager fileManager = new FileManager();
 
-        Pet dog = new Dog(
+Pet dog;
+
+try {
+    List<Pet> savedPets = fileManager.loadPets("data/pets.txt");
+
+    if (!savedPets.isEmpty()) {
+        petService.setPets(savedPets);
+        dog = savedPets.get(0);
+
+        System.out.println("Saved pets loaded successfully.");
+    } else {
+        dog = new Dog(
             101,
             "Buddy",
             2,
@@ -28,6 +43,23 @@ public class Main {
         );
 
         petService.addPet(dog);
+        System.out.println("Demo pet created.");
+    }
+
+} catch (IOException e) {
+    dog = new Dog(
+        101,
+        "Buddy",
+        2,
+        "Golden Retriever",
+        "Male",
+        true,
+        "Basic"
+    );
+
+    petService.addPet(dog);
+    System.out.println("No saved pet data found. Demo pet created.");
+}
 
         Adopter adopter = new Adopter(
             1,
@@ -46,43 +78,52 @@ public class Main {
         AdoptionService adoptionService =
                 new AdoptionService(petService);
 
-        try {
+try {
 
-            AdoptionApplication application =
-                    adoptionService.createApplication(
-                        1001,
-                        adopter,
-                        dog,
-                        "09-10-2026"
-                    );
+    if (!dog.isAvailable() || dog.isAdopted()) {
 
-            if (application != null) {
+        System.out.println("\n--- Adoption Unavailable ---");
+        System.out.println(
+            dog.getName() +
+            " has already been adopted or is unavailable."
+        );
 
-                application.displayApplication();
+    } else {
 
-                System.out.println("\n--- Admin Review ---");
+        AdoptionApplication application =
+            adoptionService.createApplication(
+                1001,
+                adopter,
+                dog,
+                "09-10-2026"
+            );
 
-                admin.approveApplication(application);
+        if (application != null) {
 
-                adoptionService.approveApplication(application);
+            application.displayApplication();
 
-                System.out.println("\n--- Final Pet Status ---");
+            System.out.println("\n--- Admin Review ---");
 
-                System.out.println(
-                    "Pet available: " + dog.isAvailable()
-                );
+            admin.approveApplication(application);
+            adoptionService.approveApplication(application);
 
-                System.out.println(
-                    "Pet adopted: " + dog.isAdopted()
-                );
-            }
-
-        } catch (PetNotFoundException e) {
+            System.out.println("\n--- Final Pet Status ---");
 
             System.out.println(
-                "Error: " + e.getMessage()
+                "Pet available: " + dog.isAvailable()
+            );
+
+            System.out.println(
+                "Pet adopted: " + dog.isAdopted()
             );
         }
+    }
+
+} catch (PetNotFoundException e) {
+
+    System.out.println("Error: " + e.getMessage());
+}
+
         System.out.println("\n========== MEDICAL & CARE ==========");
 
 MedicalService medicalService = new MedicalService();
@@ -131,5 +172,29 @@ medicalService.displayVaccinations(dog);
 
 System.out.println("\n--- Vet Appointment ---");
 medicalService.displayAppointments(vet);
+System.out.println("\n========== PET FILE STORAGE ==========");
+
+
+
+try {
+    // Save all pets to the file
+    fileManager.savePets("data/pets.txt", petService.getPets());
+
+    System.out.println("Pets saved successfully!");
+
+    // Load pets back from the file
+    List<Pet> loadedPets = fileManager.loadPets("data/pets.txt");
+
+    System.out.println("\nPets loaded from file:");
+
+    for (Pet loadedPet : loadedPets) {
+        loadedPet.displayInfo();
+        System.out.println("Adopted: " + loadedPet.isAdopted());
+        System.out.println("--------------------");
+    }
+
+} catch (IOException e) {
+    System.out.println("File error: " + e.getMessage());
+}
     }
 }

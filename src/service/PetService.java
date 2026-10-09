@@ -65,4 +65,8 @@ public class PetService implements Searchable {
     public List<Pet> getPets() {
         return pets;
     }
+    public void setPets(List<Pet> pets) {
+    this.pets.clear();
+    this.pets.addAll(pets);
+}
 }
